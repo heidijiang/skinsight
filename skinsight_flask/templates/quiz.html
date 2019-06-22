@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div style="margin-top: 0%">
+	<h4>SELECT ANY YOU LIKE:</h4>
+</div>
+<form action='/results' method='POST'>
+	<div style="margin-top: 5%">
+	<ul id="categories" class="clr">
+			{% for idx,p in products.items() %}
+				  <li>
+				    <div>
+				    	<img src="{{p['product_image_url']}}" alt="">
+				    </div>
+				    <div class="checkbox_container">
+				    	<label class="checkbox_label">
+				    	<input title="Text to show" type="checkbox" name="{{p['product_id']}}" value="{{p['product_id']}}">
+				    	<span class="collab_name">{{p['brand']}}: {{p['name']}}</span>
+				    	<span class="checkmark"></span>
+			    		</label>
+			    	</div>
+				  </li>
+		{% endfor %}
+	</ul>
+	<div class="row" style="margin-bottom: 10%">
+		<div class="col-sm-3 align-items-right"></div>
+		<div class="col-sm-3 align-items-right"></div>
+		<div class="col-sm-3 align-items-right"></div>
+		<div class="col-sm-3 align-items-right">
+			<div class="btn-group ">
+				<button type="submit" class="btn btn-primary-outline">NEXT >></button>
+			</div>
+		</div>
+	</div>
+	</div>
+</form>
+
+
+{% endblock %}

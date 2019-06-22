@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+	{% for product in products %}
+	<div class="row row2 tilerow">
+		<div class="col-sm-1">
+			#{{product['idx']}}
+		</div>
+		<div class="col-sm-3">
+			<img src="{{product['product_image_url']}}">
+		</div>
+		<div class="col-sm-3">
+			<h5><a href="{{product['url']}}" target="_blank">{{product['name']}}</a></h5>
+			<h6>{{product['brand']}}</h6>
+			<h6>{{product['price']}}</h6>
+		</div>
+		<div class="col-sm-5">
+			<img src="{{product['img_file']}}" height=150>
+		</div>
+	</div>
+
+	{% endfor %}
+{% endblock %}

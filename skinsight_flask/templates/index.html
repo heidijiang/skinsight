@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<form action='/quiz' method='POST'>
+	<div class="row">
+		{% for cat,choices in Q.items() %}
+	    	<div class="col-sm-3 align-items-center">
+	            <h3> {{cat}} </h3>
+		            {% for choice in choices%}
+		            
+					  	{% if cat == 'concerns' %}
+					  		<h4>{{choice}}</h4>
+					  		<div class="slidecontainer">
+							  	<input type="range" min="1" max="100" value='{{choice}}' name='{{choice}}' class="slider" id="myRange">
+							</div>
+
+					  	{% else %}
+					  		<div class="radio">
+						  		<label class="radio_container">
+							  		<input type="radio" value='{{choice}}' name='{{cat}}' checked>&nbsp{{choice}}
+							  		<span class="radiomark"></span>
+								</label>
+							</div>
+
+					  	{% endif %}
+					  
+	            {% endfor %}
+	    	</div>
+	    {% endfor %}
+	</div>
+
+	<div class="row">
+		<div class="col-sm-3 align-items-right"></div>
+		<div class="col-sm-3 align-items-right"></div>
+		<div class="col-sm-3 align-items-right"></div>
+		<div class="col-sm-3 align-items-right">
+			<div class="btn-group ">
+				<button type="submit" class="btn btn-primary-outline">NEXT >></button>
+			</div>
+		</div>
+	</div>
+
+</form>
+
+{% endblock %}
