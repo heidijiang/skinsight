@@ -3,9 +3,10 @@ from flask import render_template, request, session
 from skinsight_flask.skinsight import *
 
 
-Q = {'age':['15-21','22-29','30-39','40-49','50+'],
+Q = {
 	'skin type':['Normal','Oily','Dry','Combination'],
-	'concerns':['Acne','Dark Spots','Redness','Texture/Pores','Sensitivity','Wrinkles'],
+	'price sensitivity': ['Low','Medium','High'],
+	'concerns':['Texture/Pores','Redness','Dark Spots','Sensitivity','Wrinkles','Acne',],
 	'product type':['Cleanser','Moisturizer','Treatment','Mask','Eye','Sunscreen']
 }
 
@@ -25,8 +26,8 @@ def quiz():
 		concerns.append(request.values[i])
 
 	vals['concerns'] = concerns
-	vals['age'] = request.values['age']
-	vals['skin type'] = request.values['skin type']
+	vals['price'] = request.values['price sensitivity']
+	vals['skin'] = request.values['skin type']
 	vals['product'] = request.values['product type']
 
 	products = get_collab_imgs('skinsight_flask/static/data/skin_concerns_summary.csv',vals,n_disp)
