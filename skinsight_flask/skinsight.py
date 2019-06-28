@@ -60,7 +60,10 @@ def radar_plot(cat,values,concerns,m):
 	return 'data:image/png;base64,{}'.format(graph_url)
 
 def minmax(df):
-	df = (df-df.min())/(df.max()-df.min())
+	n_min = np.nanmin(df,axis=0)
+	n_max = np.nanmax(df,axis=0)
+
+	df = (df-n_min)/(n_max-n_min)
 	return df
 
 def weight_models(l):
@@ -94,6 +97,8 @@ def get_recs(file,vals,Q,n,iids_user):
 
 	# content
 	concerns = np.array([int(i) for i in vals['concerns']])/100
+
+
 	concern_names = [i for i in Q['concerns']]
 	df[concern_names] = minmax(df[concern_names])
 	# df[concern_names] = (df[concern_names]-df[concern_names].mean())/df[concern_names].std()
@@ -119,6 +124,8 @@ def get_recs(file,vals,Q,n,iids_user):
 		sim_mean_z = minmax(sim_mean)
 
 		df['item_sim'] = sim_mean_z
+
+		print(df['item_sim'])
 		w = weight_models(len(user_idx))
 		df['final_rec'] = w*df['item_sim'] + (1-w)*df['content_sim']
 	else:
