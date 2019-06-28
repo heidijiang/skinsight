@@ -79,26 +79,33 @@ def get_collab_imgs(file,vals,n_disp):
 	df = df[cols].sample(n_disp).T.to_dict()
 	return df
 
+def get_price(x):
+	if x == 'Low':
+		y = 0
+	elif x == 'Medium':
+		y = .5
+	else:
+		y = 1
+	return y
 
 def get_recs(file,vals,Q,n,iids_user):
 	
 	df = pd.read_csv(file)
+
+	# content
 	concerns = np.array([int(i) for i in vals['concerns']])/100
 	concern_names = [i for i in Q['concerns']]
 	df[concern_names] = minmax(df[concern_names])
 	# df[concern_names] = (df[concern_names]-df[concern_names].mean())/df[concern_names].std()
-	df['content_sim'] = cosine_similarity(df[concern_names],concerns[:,np.newaxis].T).ravel() 
-	#np.array(df[concern_names]).dot((concerns).T)
-	# cosine_similarity(df[concern_names],concerns[:,np.newaxis].T).ravel() 
+	# df['content_sim'] = cosine_similarity(df[concern_names],concerns[:,np.newaxis].T).ravel()
+	tmp = df[concern_names].copy()
+	tmp['price_scaled'] = 1 - minmax(df['price_num']) 
+	price = get_price(vals['price'])
+	print(price)
+	df['content_sim'] = np.array(tmp).dot((np.append(concerns,price)).T)
 	df['content_sim'] = minmax(df['content_sim'])
 
-	# THE OLD WAY
-	
-	# concern_names = ['{}_final'.format(i) for i in Q['concerns']]
-	# df[concern_names] = (df[concern_names].mean() - df[concern_names])/df[concern_names].std()
-	# df['content_sim'] = np.array(df[concern_names]).dot((concerns).T)
-	# df['content_sim'] = (df['content_sim'].mean() - df['content_sim'])/df['content_sim'].std()
-
+	# now do collab filt
 	iids_user = list(iids_user.to_dict().keys())
 	if len(iids_user)>0:
 		sim = np.genfromtxt('skinsight_flask/static/data/item_collab_sim.csv')
@@ -110,7 +117,6 @@ def get_recs(file,vals,Q,n,iids_user):
 		sim_z = minmax(sim_log)
 		sim_mean = np.nanmean(sim_z[:,user_idx],axis=1)
 		sim_mean_z = minmax(sim_mean)
-		# item_ranked = np.argsort(sim_mean_z)[::-1]
 
 		df['item_sim'] = sim_mean_z
 		w = weight_models(len(user_idx))
@@ -121,7 +127,7 @@ def get_recs(file,vals,Q,n,iids_user):
 	prod = vals['product'].lower()
 	# df = df[(df[prod])].reset_index(drop=True)
 	df = df[(df[prod]) &  (df[vals['skin']])].reset_index(drop=True)
-	df['price_scaled'] = df['price_num']
+	
 	df_ranked = df.sort_values('final_rec',ascending=False).iloc[0:n]
 	img_files = []
 	m = [0,1]
