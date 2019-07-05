@@ -1,14 +1,12 @@
 from skinsight_flask import app
 from flask import render_template, request, session
 from skinsight_flask.skinsight import *
+from sksutils.sksutils import init_cats
 
 
-Q = {
-	'skin type':['Normal','Oily','Dry','Combination'],
-	'price sensitivity': ['Low','Medium','High'],
-	'concerns':['Texture/Pores','Redness','Dark Spots','Sensitivity','Wrinkles','Acne',],
-	'product type':['Cleanser','Moisturizer','Treatment','Mask','Eye','Sunscreen']
-}
+Q = gen_Q()
+
+maindir = './skinsight_flask/static/data'
 
 @app.route('/')
 @app.route('/index.html')
@@ -20,17 +18,16 @@ def index():
 def quiz():
 	n_disp = 40
 	vals = dict()
-	vals['concerns'] = dict()
-	concerns = []
-	for i in Q['concerns']:
-		concerns.append(request.values[i])
 
-	vals['concerns'] = concerns
-	vals['price'] = request.values['price sensitivity']
-	vals['skin'] = request.values['skin type']
-	vals['product'] = request.values['product type']
+	for c in Q.keys():
+		cnew = c.split(' ')[0]
+		if c == 'concerns':
+			vals[cnew] = [request.values[i] for i in Q[c]]
+		else:
+			vals[cnew] = request.values[c]
+	
 
-	products = get_collab_imgs('skinsight_flask/static/data/skin_concerns_summary.csv',vals,n_disp)
+	products = get_collab_imgs('{}/df_skin_concerns_sentiment.csv'.format(maindir),vals,n_disp)
 	session['vals'] = vals
 	return render_template('quiz.html', products=products)
 
@@ -40,7 +37,11 @@ def results():
 	iids_user = request.values
 	n = 10
 	vals = session['vals']
-	products = get_recs('skinsight_flask/static/data/skin_concerns_summary.csv', vals, Q, n, iids_user)
+
+	file_content = '{}/df_skin_concerns_sentiment.csv'.format(maindir)
+	file_item = '{}/item_collab_sim.csv'.format(maindir)
+
+	products = get_recs(file_content, file_item,vals, Q, n, iids_user)
 
 	return render_template('results.html', products=products)
 

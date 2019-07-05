@@ -5,6 +5,7 @@ import io
 import base64
 from math import pi
 from sklearn.metrics.pairwise import cosine_similarity
+from sksutils.sksutils import init_cats
 
 def radar_plot(cat,values,concerns,m):
 
@@ -71,6 +72,16 @@ def weight_models(l):
 	w = w_init * (1/(1+np.exp(-l)))
 	return w
 
+def get_price(x):
+
+	cats = init_cats('price sensitivity')
+	if x == cats[0]:
+		y = 0
+	elif x == cats[1]:
+		y = .5
+	else:
+		y = 1
+	return y
 
 def get_collab_imgs(file,vals,n_disp):
 	cols = ['product_id','brand','name','product_image_url']
@@ -82,38 +93,30 @@ def get_collab_imgs(file,vals,n_disp):
 	df = df[cols].sample(n_disp).T.to_dict()
 	return df
 
-def get_price(x):
-	if x == 'Low':
-		y = 0
-	elif x == 'Medium':
-		y = .5
-	else:
-		y = 1
-	return y
-
-def get_recs(file,vals,Q,n,iids_user):
+def get_recs(file_content,file_item,vals,Q,n,iids_user):
 	
-	df = pd.read_csv(file)
+	df = pd.read_csv(file_content)
 
 	# content
 	concerns = np.array([int(i) for i in vals['concerns']])/100
+	concern_names = ['{}_{}_summary'.format(c,vals['skin'].lower()) for c in init_cats('concerns')]
 
 
-	concern_names = [i for i in Q['concerns']]
 	df[concern_names] = minmax(df[concern_names])
-	# df[concern_names] = (df[concern_names]-df[concern_names].mean())/df[concern_names].std()
-	# df['content_sim'] = cosine_similarity(df[concern_names],concerns[:,np.newaxis].T).ravel()
+
+	# add 7th dim (price, not included in radar plot!)
 	tmp = df[concern_names].copy()
 	tmp['price_scaled'] = 1 - minmax(df['price_num']) 
 	price = get_price(vals['price'])
-	print(price)
+
+	# get similarity btwn content model and user
 	df['content_sim'] = np.array(tmp).dot((np.append(concerns,price)).T)
 	df['content_sim'] = minmax(df['content_sim'])
 
 	# now do collab filt
 	iids_user = list(iids_user.to_dict().keys())
 	if len(iids_user)>0:
-		sim = np.genfromtxt('skinsight_flask/static/data/item_collab_sim.csv')
+		sim = np.genfromtxt(file_item)
 		user_idx = np.array(df[df['product_id'].isin(iids_user)].index)
 
 		sim[sim==0]=np.nanmin(sim[sim>0])
@@ -132,15 +135,13 @@ def get_recs(file,vals,Q,n,iids_user):
 		df['final_rec'] = df['content_sim']
 
 	prod = vals['product'].lower()
-	# df = df[(df[prod])].reset_index(drop=True)
-	df = df[(df[prod]) &  (df[vals['skin']])].reset_index(drop=True)
+	df = df[df[prod]].reset_index(drop=True)
 	
-	df_ranked = df.sort_values('final_rec',ascending=False).iloc[0:n]
-	img_files = []
+	df_ranked = df.sort_values('final_rec',ascending=False).reset_index(drop=True).iloc[0:n]
 	m = [0,1]
 
-	for i in range(n):
-		img_files.append(radar_plot(Q['concerns'],df_ranked[concern_names].iloc[i].to_list(),list(concerns),m))
+	img_files = [radar_plot(Q['concerns'],df_ranked[concern_names].iloc[i].to_list(),list(concerns),m) for i in range(n)]
+
 
 	df_ranked['img_file'] = img_files
 	df_ranked['idx'] = list(range(1,n+1))
