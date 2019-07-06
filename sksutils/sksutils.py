@@ -1,5 +1,9 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import io
+import base64
+from math import pi
 
 def thresh_rm(df,cols,thresh):
 	rm_thresh = [(i,np.percentile(df[i].value_counts().values,thresh)) for i in cols]
@@ -55,9 +59,10 @@ def stack_lists(df,new_col_name):
 
 	return df_new
 
-def radar_plot(cat,values,concerns,m):
+def radar_plot(cat,values,concerns):
 
 	N = len(cat)
+	m = [0,1]
 	x_as = [n / float(N) * 2 * pi for n in range(N)]
 	x_as += x_as[:1]
 
@@ -115,9 +120,12 @@ def minmax(df):
 	df = (df-n_min)/(n_max-n_min)
 	return df
 
-def weight_models(l):
-	w_init = .5
-	w = w_init * (1/(1+np.exp(-l)))
+def sigmoid(x):
+	return 1 / (1 + np.exp(-x))
+
+
+def weight_models(l,w_init):
+	w = w_init * sigmoid(l)
 	return w
 
 def get_price(x):
