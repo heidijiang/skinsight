@@ -1,6 +1,7 @@
 import pandas as pd 
 import numpy as np
 from sksutils.sksutils import *
+from scipy.spatial import distance
 
 class Hybrid:
 
@@ -60,8 +61,9 @@ class Hybrid:
 		price = get_price(self.price)
 
 		# get similarity btwn content model and user
-		self.data['kbm'] = np.array(tmp).dot((np.append(self.concerns,price)).T)
-
+		# self.data['kbm'] = np.array(tmp).dot((np.append(self.concerns,price)).T)
+		self.data['kbm'] = tmp.apply(lambda x: distance.euclidean(x,np.append(self.concerns,price)),axis=1)
+		self.data['kbm'] = self.data['kbm'].max() - self.data['kbm']
 		if norm == 'minmax':
 			self.data['kbm_norm'] = minmax(self.data['kbm'])
 
@@ -93,7 +95,7 @@ class Hybrid:
 
 		self.output = self.data.loc[self.data[self.product],cols].sort_values('final_rec',ascending=False)
 		self.output = self.output.reset_index(drop=True).reset_index().iloc[0:self.rank_display]
-
+		self.output['index'] += 1
 		print(self.output[self.concern_cols()])
 		print(self.concerns)
 
