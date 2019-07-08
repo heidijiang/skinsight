@@ -44,15 +44,15 @@ class Hybrid:
 			self.num_items = len(items)
 
 
-	def concern_cols(self, use_skintype=False):
-		if use_skintype:
+	def concern_cols(self):
+		if self.use_skintype:
 			return ['{}_{}_summary'.format(c,self.skin.lower()) for c in init_cats('concerns')]
 
 		return ['{}_summary'.format(c) for c in init_cats('concerns')]
 
 
-	def KBM(self, norm):
-
+	def KBM(self, norm, use_skintype):
+		self.use_skintype = use_skintype
 		concern_names = self.concern_cols()
 
 		# add 7th dim (price, not included in radar plot!)
@@ -61,9 +61,9 @@ class Hybrid:
 		price = get_price(self.price)
 
 		# get similarity btwn content model and user
-		# self.data['kbm'] = np.array(tmp).dot((np.append(self.concerns,price)).T)
-		self.data['kbm'] = tmp.apply(lambda x: distance.euclidean(x,np.append(self.concerns,price)),axis=1)
-		self.data['kbm'] = self.data['kbm'].max() - self.data['kbm']
+		self.data['kbm'] = np.array(tmp).dot((np.append(self.concerns,price)**2).T)
+		# self.data['kbm'] = tmp.apply(lambda x: distance.euclidean(x,np.append(self.concerns,price)),axis=1)
+		# self.data['kbm'] = self.data['kbm'].max() - self.data['kbm']
 		if norm == 'minmax':
 			self.data['kbm_norm'] = minmax(self.data['kbm'])
 

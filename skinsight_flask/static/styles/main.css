@@ -19,7 +19,7 @@ a{
 }
 
 a:hover {
-    color: #d9b731;
+    color: #c0d1c9;
     text-decoration: none;
 }
 
@@ -83,8 +83,8 @@ h6 {
   text-align: left;
 }
 
-.header {
-    /*background-color: #b26a4b;*/
+.navbar a:hover{
+  text-decoration: none;
 }
 
 .first {

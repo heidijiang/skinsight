@@ -13,7 +13,7 @@ def get_recs(Model):
 	
 	Q = gen_Q()
 
-	Model.KBM('minmax')
+	Model.KBM('minmax',use_skintype=True)
 	Model.CF('minmax')
 	Model.gen_ranks()
 	Model.add_radar()
