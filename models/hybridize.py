@@ -5,7 +5,7 @@ from models.kbm import gen_knowledge_model
 from models.cf import gen_cf
 
 
-def hybridize(file_in,file_out):
+def hybridize(file_in,file_out,bert_path):
 
     df_kbm = gen_knowledge_model(file_in,bert_path)
     df_cf = gen_cf(file_in)
@@ -14,4 +14,5 @@ def hybridize(file_in,file_out):
     df_final.to_csv('{}/kbm_cf.csv'.format(file_in,index=False)
 
 if __name__ == '__main__':
-    hybridize('~/Documents/insight/skinsight','~/Documents/insight/skinsight/app/data')
+    file_root = '~/Documents/insight/skinsight'
+    hybridize(file_root,'{}/data'.format(file_root),'{}/bert/bert_final/results'.format(file_root))
