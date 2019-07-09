@@ -62,7 +62,7 @@ class Hybrid:
 
 		# get similarity btwn content model and user
 		self.data['kbm'] = np.array(tmp).dot((np.append(self.concerns,price)**2).T)
-		# self.data['kbm'] = tmp.apply(lambda x: distance.euclidean(x,np.append(self.concerns,price)),axis=1)
+		# self.data['kbm'] = tmp.apply(lambda x: distance.euclidean(x,np.append(self.concerns,price))**2,axis=1)
 		# self.data['kbm'] = self.data['kbm'].max() - self.data['kbm']
 		if norm == 'minmax':
 			self.data['kbm_norm'] = minmax(self.data['kbm'])
