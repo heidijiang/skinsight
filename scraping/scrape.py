@@ -4,11 +4,12 @@ import requests
 import pandas as pd
 import numpy as np
 
-class SephoraFetch:
+class SephoraAPIFetch:
     
-    def __init__(self,file1,file2):
-        self.base_url = file1    
+    def __init__(self):
+        self.base_url = 'https://www.sephora.com/api/catalog'
         self.product_url = '{}/categories/cat150006/products?currentPage=0&pageSize=1000&content=true&includeRegionsMap=true'.format(self.base_url)
+
 
     def product_list(self,s):
         url = '{}/categories/{}/products?currentPage=0&pageSize=999999999&content=true&includeRegionsMap=true'.format(self.base_url,s['id'])
@@ -25,7 +26,8 @@ class SephoraFetch:
         df = pd.DataFrame(D)
         df['category'] = s['name']
         return df
-    
+
+
     def review_url(self,product_id,offset=0):
         
         return 'https://api.bazaarvoice.com/data/reviews.json?Filter=ProductId%3A{}&Sort=Helpfulness%3Adesc&Limit=100&Offset={}&Include=Products%2CComments&Stats=Reviews&passkey=rwbw526r2e7spptqd2qzbkp7&apiversion=5.4'.format(product_id,offset)
@@ -99,10 +101,7 @@ class SephoraFetch:
 
 if __name__ == '__main__':
 
-    s = SephoraFetch()
-    file1 = 'https://www.sephora.com/api/catalog'
-    file2 = 'https://api.bazaarvoice.com/data/reviews.json?Filter=ProductId%3A{product_id}&Sort=Helpfulness%3Adesc&Limit=100&Offset={offset}&Include=Products%2CComments&Stats=Reviews&passkey=rwbw526r2e7spptqd2qzbkp7&apiversion=5.4'
-    s = SephoraFetch(file1,file2)
+    s = SephoraAPIFetch()
     s.query_summary()
     s.query_reviews()
     s.df.to_csv('db_summary.csv', index=False)
