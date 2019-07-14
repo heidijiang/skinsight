@@ -6,11 +6,12 @@ from sklearn.neighbors import NearestNeighbors
 def sparsity(iu):
     sparsity = iu[iu>0].sum()
     sparsity /= (iu.shape[0] * iu.shape[1])
-    return sparsity *= 100
+    sparsity *= 100
+    return sparsity
 
 
 def item_user(file):
-    df = pd.read_csv('{}/skin_reviews.csv'.format(file))
+    df = pd.read_csv('{}/db_reviews.csv'.format(file))
     df = thresh_rm(df,['user_name'],20)
 
     df = df[['product_id','user_name','rating']]
@@ -46,8 +47,9 @@ def gen_cf(file):
     sim_z = (sim_log-np.nanmean(sim_log,axis=1))/np.nanstd(sim_log,axis=1)
     df_sim = pd.DataFrame(sim_z,columns=urm.columns)
 
-    df_sim.to_csv('{}/cf.csv'.format(file),index=False)
+    df_sim.to_csv('{}/db_cf.csv'.format(file),index=False)
 
+    print('CF model built')
     return df_sim
 
 if __name__ == '__main__':

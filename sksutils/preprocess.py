@@ -1,41 +1,44 @@
 import pandas as pd
-import numpy as np
 import requests
 import json
-from sksutils import init_cats
+from sksutils.sksutils import init_cats, thresh_rm
 
-def init_process(file,cats):
+def preprocess(path):
     
+    print('Initializing data cleaning...')
+    df = pd.read_csv('{}/db_reviews_raw.csv'.format(path))
+    df_sum = pd.read_csv('{}/db_summary_raw.csv'.format(path))
 
-    df = pd.DataFrame()
-    for cat in cats:
-        df_tmp = pd.read_csv('{}/sephora_review_db_{}.csv'.format(file,cat))
-        if cat[-1]=='s':
-            cat = cat[:-1]
-        df_tmp[cat] = 1
-        df_tmp[cat] = df_tmp[cat].fillna(0)
-        df = df.append(df_tmp, ignore_index = True) 
+    df = df.dropna(subset=['review_text']).reset_index(drop=True)
+    df_sum['price_num'] = df_sum['price'].map(lambda x: x.lstrip('$').split(" ")[0]).astype('float')
+    df_sum['url'] = 'https://www.sephora.com'+df_sum['url']
+    df_sum = pd.merge(df_sum,df.groupby('product_id')['rating'].count().reset_index().rename(columns={'rating':'num_reviews'}),on='product_id',how='left')
+    df_sum = pd.merge(df_sum,df.groupby('product_id')['rating'].std().reset_index().rename(columns={'rating':'rating_std'}),on='product_id',how='left')
 
-    ages = {'13to17':'15','18to24':'21','25to34':'30','35to44':'40','45to54':'50','over54':'60'}
-    df['age'] = df['age'].replace(ages)
-    df['price_num'] = df['price'].map(lambda x: x.lstrip('$').split(" ")[0]).astype('float')
-    df['recommended'] = df['recommended'].astype('bool').astype('int64')
+    df = df.drop_duplicates(subset=['product_id', 'user_name']).reset_index().drop(['index'],axis=1)
 
-    df = df.drop_duplicates(subset=['product_id', 'user_name'],keep='last').reset_index().drop(['index'],axis=1)
-    
-    df = thresh_rm(df,['product_id'],20)
-        
     skin_type = ['Normal','Oily','Dry','Combination']
     for s in skin_type:
         df['product_skin_type_{}'.format(s)] = df['description'].str.contains(str('✔ '+s))
-    
+
     C = {'acne':'Acne', 'aging':'Wrinkles', 'blackheads':'Acne', 'darkCircles':'Dark Spots', 'dullness':'Texture/Pores', 
      'pores':'Texture/Pores', 'redness':'Redness', 'sensitivity':'Sensitivity', 'sunDamage':'Dark Spots', 
      'unevenSkinTones':'Texture/Pores'}
-    
+
     df['skin_concerns'] = df['skin_concerns'].replace(C)
-        
-    return df
+
+    df = thresh_rm(df,['product_id'],30)
+    df_sum = df_sum[df_sum['product_id'].isin(df['product_id'].unique())].reset_index(drop=True)
+
+    df_sum = get_true_cats(df_sum)
+
+    df = pd.merge(df,df_sum[['product_id','Cleanser','Moisturizer','Treatment','Mask','Sunscreen','Eye']],on=['product_id'],how='left')
+    
+    df.to_csv('{}/db_reviews.csv'.format(path),index=False)
+    df_sum.to_csv('{}/db_summary.csv'.format(path), index=False)
+
+    print('Initial data cleaning finished')
+    return df, df_sum
 
 
 def add_cats(df,s,i):
@@ -47,7 +50,7 @@ def add_cats(df,s,i):
     cat_str = s[1].replace(' ','_')
     df[cat_str] = 0
     df.loc[df['product_id'].isin(prod_list),cat_str] = 1
-    
+
     return df
     
     
@@ -69,50 +72,24 @@ def get_true_cats(df):
 
     exc_idx = df[(df['Body_Sunscreen']==1) | (df['After_Sun_Care']==1) | (df['Value_&_Gift_Sets']==1) | (df['Mini_Size']==1)].index
     df = df.drop(exc_idx).reset_index(drop=True)
-    
+
     C = {'Cleanser': ['Makeup_Removers','Face_Wash_&_Cleansers','Face_Wipes','Toners'],
         'Moisturizer':['Moisturizers','Night_Creams','Face_Oils','Mists_&_Essences','BB_&_CC_Creams'],
         'Treatment': ['Exfoliators','Face_Serums','Blemish_&_Acne_Treatments','Facial_Peels'],
          'Mask': ['Face_Masks','Sheet_Masks'],
-         'Sunscreen': ['Face_Sunscreen']
+         'Sunscreen': ['Face_Sunscreen'],
+         'Eye': ['Eye_Creams_&_Treatments', 'Eye_Masks']
         }
-    
+
     for key,vals in C.items():
         df[key] = df[vals].astype(bool).any(axis=1)
-    df['Eye'] = df['eye'].fillna(0).astype(bool)
-    
-    df = df[['brand', 'name', 'brand_id', 'brand_image_url', 'product_id',
-       'product_image_url', 'rating', 'skin_type', 'eye_color',
-       'skin_concerns', 'incentivized_review', 'skin_tone', 'age',
-       'beauty_insider', 'user_name', 'review_text', 'price','price_num', 'recommended',
-       'first_submission_date', 'last_submission_date', 'location',
-       'description', 'Cleanser', 'Moisturizer', 'Treatment', 'Eye',
-       'Sunscreen', 'Mask','product_skin_type_Normal', 'product_skin_type_Oily','product_skin_type_Dry', 'product_skin_type_Combination']]
+        
+    exc = [j for i in C.values() for j in i]
+    exc.extend(['Value_&_Gift_Sets', 'Mini_Size', 'Acne_&_Blemishes', 'Anti-Aging',
+           'Dark_Spots', 'Pores', 'Dryness', 'Fine_Lines_&_Wrinkles', 'Dullness',
+           'Decollete_&_Neck_Creams', 'Blotting_Papers', 'Body_Sunscreen',
+           'After_Sun_Care'])
+
+    df = df.drop(exc,axis=1).reset_index(drop=True)
     
     return df
-
-
-def get_summary(df):
-    df_means = df.groupby('product_id')['rating','recommended'].mean()
-    df_sd = df.groupby('product_id')['rating'].std()
-    user_cats = ['user_name','rating','skin_type','eye_color','skin_concerns','incentivized_review','skin_tone','age','review_text','recommended','first_submission_date','last_submission_date','location']
-    df_sum = df.groupby('product_id').first().reset_index().drop(user_cats,axis=1)
-    df_sum = df_sum.join(df_means,on='product_id')
-    df_sum['rating_sd'] = df_sd.reset_index()['rating']
-    df_sum['num_reviews'] = df.groupby('product_id').size().reset_index()[0]
-    return df_sum
-
-
-
-if __name__=='__main__':
-
-	file = '~/Documents/insight/skinsight'
-	cats = init_cats('product type')
-	df = init_process(file,cats)
-    df = get_true_cats(df)
-	df_sum = get_summary(df)
-
-	df.to_csv('skin_reviews.csv',index=False)
-	df_sum.to_csv('skin_summary.csv',index=False)
-
-	

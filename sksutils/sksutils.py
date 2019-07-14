@@ -148,3 +148,6 @@ def bashdir2concerns():
 	D['dark spot'] = 'Dark Spots'
 	D['wrinkle'] = 'Wrinkles'
 	return D
+
+def bashdir():
+	return ['acne','texture','redness', 'wrinkle','sensitive','dark spot']

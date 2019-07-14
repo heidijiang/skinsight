@@ -2,7 +2,7 @@ for col in acne texture dark_spot sensitive wrinkle redness
 do
 	export BERT_BASE_DIR=~/Documents/insight/skinsight/bert/bert_dev
 
-	for type in train dev test
+	for type in test #train dev 
 	do 
 		python run_classifier.py \
 		--task_name=cola \
@@ -22,6 +22,5 @@ do
 
 		cp results/$col/bert_output/test_results.tsv results/$col/data_$type/test_results.tsv
 	done
-	# rm -rf results/$col/bert_output
 
 done
