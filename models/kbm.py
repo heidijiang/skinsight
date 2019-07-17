@@ -41,7 +41,7 @@ def sentiment_agg(avg_info,tmp,name,agg_type='skin type'):
     return avg_info
 
 
-def init_process(file,bert_path):
+def init_process(file,bert_path, save=True):
 	# pull in bert sentiment data
 	
 	df_all = pd.read_csv('{}/db_aspect_sentences.csv'.format(file))
@@ -60,11 +60,12 @@ def init_process(file,bert_path):
 	    bert = pd.merge(test,pd.merge(idx,results[['index',name]],on='index'),on='index')
 	    df_all = pd.merge(df_all,bert[['sample_index',name]],on='sample_index',how='left')
 
-	df_all.to_csv('{}/db_aspect_sentences_bert.csv'.format(file), index=False)
+	if save:
+		df_all.to_csv('{}/db_aspect_sentences_bert.csv'.format(file), index=False)
 
 	return df_all
 
-def gen_knowledge_model(path, bert_path):
+def gen_knowledge_model(path, bert_path, save=True):
 
 	df_reviews = pd.read_csv('{}/db_reviews.csv'.format(path))
 	df_reviews['skin_type'] = df_reviews['skin_type'].fillna('none')
@@ -95,7 +96,8 @@ def gen_knowledge_model(path, bert_path):
 	
 	df_sum = pd.merge(df_sum,avg_info,on=['product_id','num_reviews'])
 
-	df_sum.to_csv('{}/db_kbm.csv'.format(path), index=False)
+	if save:
+		df_sum.to_csv('{}/db_kbm.csv'.format(path), index=False)
 	
 	print("KB model generated")
 	return df_sum

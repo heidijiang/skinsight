@@ -1,7 +1,8 @@
 import pandas as pd
 from scipy.sparse import csr_matrix
 from sklearn.neighbors import NearestNeighbors
-
+import numpy as np
+from sksutils.sksutils import thresh_rm
 
 def sparsity(iu):
     sparsity = iu[iu>0].sum()
@@ -10,7 +11,7 @@ def sparsity(iu):
     return sparsity
 
 
-def item_user(file):
+def item_user(file, normalize=True):
     df = pd.read_csv('{}/db_reviews.csv'.format(file))
     df = thresh_rm(df,['user_name'],20)
 
@@ -19,16 +20,17 @@ def item_user(file):
 
     urm = df_iu.pivot(columns='product_id',index='user_name',values='rating').fillna(0).reset_index(drop=True)
 
-    urm[urm==0]=np.nan
-    urm = urm.sub(urm.mean(axis=1),axis=0).divide(urm.std(axis=1),axis=0)
-    # urm += -(urm.min().min()-1)
-    urm = urm.fillna(0)
+    if normalize:
+        urm[urm==0]=np.nan
+        urm = urm.sub(urm.mean(axis=1),axis=0).divide(urm.std(axis=1),axis=0)
+        # urm += -(urm.min().min()-1)
+        urm = urm.fillna(0)
 
     return urm
 
-def gen_cf(file):
+def gen_cf(path, save=True):
 
-    urm = item_user(file)
+    urm = item_user(path)
     X = np.array(urm.T)
 
     model = NearestNeighbors(metric='cosine', algorithm='brute', n_neighbors=20, n_jobs=-1)
@@ -47,7 +49,8 @@ def gen_cf(file):
     sim_z = (sim_log-np.nanmean(sim_log,axis=1))/np.nanstd(sim_log,axis=1)
     df_sim = pd.DataFrame(sim_z,columns=urm.columns)
 
-    df_sim.to_csv('{}/db_cf.csv'.format(file),index=False)
+    if save:
+        df_sim.to_csv('{}/db_cf.csv'.format(path),index=False)
 
     print('CF model built')
     return df_sim
