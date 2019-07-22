@@ -61,9 +61,12 @@ class Hybrid:
 		price = get_price(self.price)
 
 		# get similarity btwn content model and user
-		self.data['kbm'] = np.array(tmp).dot((np.append(self.concerns,price)**2).T)
-		# self.data['kbm'] = tmp.apply(lambda x: distance.euclidean(x,np.append(self.concerns,price))**2,axis=1)
-		# self.data['kbm'] = self.data['kbm'].max() - self.data['kbm']
+		# self.data['kbm'] = np.array(tmp).dot((np.append(self.concerns,price)**2).T)
+		if price == 0:
+			self.data['kbm'] = tmp.apply(lambda x: distance.euclidean(x[:-1],self.concerns),axis=1)
+		else:
+			self.data['kbm'] = tmp.apply(lambda x: distance.euclidean(x,np.append(self.concerns,price)),axis=1)
+		self.data['kbm'] = self.data['kbm'].max() - self.data['kbm']
 		if norm == 'minmax':
 			self.data['kbm_norm'] = minmax(self.data['kbm'])
 
@@ -96,8 +99,10 @@ class Hybrid:
 		self.output = self.data.loc[self.data[self.product],cols].sort_values('final_rec',ascending=False)
 		self.output = self.output.reset_index(drop=True).reset_index().iloc[0:self.rank_display]
 		self.output['index'] += 1
-		print(self.output[self.concern_cols()])
-		print(self.concerns)
+
+		print(self.output[self.concern_cols()].iloc[:,:3])
+		print(self.output[self.concern_cols()].iloc[:,3:])
+		print(self.output['final_rec'])
 
 	def add_radar(self):
 

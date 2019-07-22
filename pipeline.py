@@ -12,7 +12,7 @@ def scrape(path):
 def clean(path):
 
 	preprocess.preprocess(path)
-	# nlp_process.init_process(path)
+	nlp_process.init_process(path)
 	# nlp_process.bert_setup(path)
 	# bert_setup.save_test(path)
 

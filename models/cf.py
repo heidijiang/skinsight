@@ -12,6 +12,7 @@ def sparsity(iu):
 
 
 def item_user(file, normalize=True):
+
     df = pd.read_csv('{}/db_reviews.csv'.format(file))
     df = thresh_rm(df,['user_name'],20)
 
