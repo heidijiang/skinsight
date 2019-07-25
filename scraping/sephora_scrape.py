@@ -16,8 +16,8 @@ class SephoraAPIFetch:
 
         '''
         Gets all the products across categories, and some general summary info. Returns dataframe.
-
         '''
+
         url = '{}/categories/{}/products?currentPage=0&pageSize=999999999&content=true&includeRegionsMap=true'.format(self.base_url,s['id'])
         r = requests.get(url)
         content = json.loads(r.content)

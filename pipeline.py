@@ -6,6 +6,7 @@ from bert import bert_setup
 import argparse
 
 def scrape(path):
+
 	'''
 	Wrapper function to scrape sephora API data
 	input: path where you want scraping results to be output
@@ -15,6 +16,7 @@ def scrape(path):
 
 
 def clean(path):
+
 	'''
 	Wrapper function to pre-process raw summary and review data
 	input: path where you want cleaned data to be output
@@ -26,6 +28,7 @@ def clean(path):
 	bert_setup.save_test(path)
 
 def model(path_in, path_out, path_bert):
+	
 	'''
 	Wrapper function to scrape sephora API data
 	input: 
