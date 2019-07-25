@@ -6,6 +6,15 @@ import base64
 from math import pi
 
 def thresh_rm(df,cols,thresh):
+
+	'''
+    Remove data below a certain percentile of a given frequency distribution
+    input:
+    	df: review dataframe
+    	cols: column on which to generate distribution
+    	thresh: threshold for removal
+    '''
+
 	rm_thresh = [(i,np.percentile(df[i].value_counts().values,thresh)) for i in cols]
 	for i in rm_thresh:
 	    tmp = df[i[0]].value_counts().reset_index()
@@ -15,6 +24,11 @@ def thresh_rm(df,cols,thresh):
 
 
 def init_cats(cat_type):
+
+	'''
+    Returns hard-coded information for website
+    input: category of information desired
+    '''
 
 	if cat_type == 'broad':
 		return ['skin type', 'price sensitivity', 'concerns', 'product type']
@@ -36,10 +50,20 @@ def init_cats(cat_type):
 
 
 def gen_Q():
+
+	'''
+    Generate dictionary of all categories for KBM
+    '''
+
 	return {c: init_cats(c) for c in init_cats('broad')}
 
 
 def concern_strmatch():
+
+	'''
+    Returns dictionary of concerns and string lookup list for each concern
+    '''
+
 	cats = init_cats('concerns')
 	strmatches = ['pore|texture|smooth|soft|dull',
 	' red |redness',
@@ -52,6 +76,14 @@ def concern_strmatch():
 
 
 def stack_lists(df,new_col_name):
+
+	'''
+    expand list within dataframe cell into a column
+    input:
+    	df: review dataframe
+    	new_col_name: renamed col
+    '''
+
 	df_new = (df.apply(pd.Series)
           .stack()
           .reset_index(level=1, drop=True)
@@ -60,6 +92,14 @@ def stack_lists(df,new_col_name):
 	return df_new
 
 def radar_plot(cat,values,concerns):
+
+	'''
+    Build radar plot and return byte-encoded tmp image file path
+    input:
+    	cat: aspect names
+    	values: model-generated aspect aggregation
+    	concerns: user generated concerns
+    '''
 
 	N = len(cat)
 	m = [0,1]
@@ -114,6 +154,11 @@ def radar_plot(cat,values,concerns):
 	return 'data:image/png;base64,{}'.format(graph_url)
 
 def minmax(df):
+
+	'''
+    specific minmax scaler that works on single series too
+    '''
+
 	n_min = np.nanmin(df,axis=0)
 	n_max = np.nanmax(df,axis=0)
 
@@ -125,10 +170,22 @@ def sigmoid(x):
 
 
 def weight_models(l,w_init):
+
+	'''
+    Determine hyperparameter for weighing KBM vs CF
+    input:
+    	l: # of items chosen by user
+    	w_init: inital weight
+    '''
+
 	w = w_init * sigmoid(l)
 	return w
 
 def get_price(x):
+
+	'''
+    Helper fct for setting price weight
+    '''
 
 	cats = init_cats('price sensitivity')
 	if x == cats[0]:
@@ -140,6 +197,11 @@ def get_price(x):
 	return y
 
 def bashdir2concerns():
+
+	'''
+    Helper fct for converting directories to website names
+    '''
+
 	D = dict()
 	D['acne'] = 'Acne'
 	D['texture'] = 'Texture/Pores'

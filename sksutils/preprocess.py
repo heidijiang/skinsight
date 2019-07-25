@@ -4,6 +4,11 @@ import json
 from sksutils.sksutils import init_cats, thresh_rm
 
 def preprocess(path):
+
+    '''
+    Cleaning summary and review data
+    input: path for input/output data
+    '''
     
     print('Initializing data cleaning...')
     df = pd.read_csv('{}/db_reviews_raw.csv'.format(path))
@@ -42,6 +47,15 @@ def preprocess(path):
 
 
 def add_cats(df,s,i):
+
+    '''
+    Helper fct for get_true_cats to ping Sephora API for additional data
+    input: 
+        df: summary dataframe
+        s: tuple with micro-level product category ID and name (i.e., Night Cream)
+        i: macro-level product category (i.e., Moisturizer)
+    '''
+
     url = str('https://www.sephora.com/api/catalog/categories/'+s[0]+'/products?currentPage=0&pageSize=999999999&content=true&includeRegionsMap=true')
     r = requests.get(url)
     j2 = json.loads(r.content)
@@ -55,6 +69,12 @@ def add_cats(df,s,i):
     
     
 def get_true_cats(df):
+
+    '''
+    Grabbing finer grained categorical information for product type from API, remove irrelevant products
+    input: summary dataframe
+    '''
+
     url = 'https://www.sephora.com/api/catalog/categories/cat150006/products?'
     r = requests.get(url)
     j = json.loads(r.content)

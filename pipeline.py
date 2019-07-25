@@ -6,17 +6,33 @@ from bert import bert_setup
 import argparse
 
 def scrape(path):
+	'''
+	Wrapper function to scrape sephora API data
+	input: path where you want scraping results to be output
+	'''
 
 	sephora_scrape.init_scrape(path)
 
+
 def clean(path):
+	'''
+	Wrapper function to pre-process raw summary and review data
+	input: path where you want cleaned data to be output
+	'''
 
 	preprocess.preprocess(path)
 	nlp_process.init_process(path)
-	# nlp_process.bert_setup(path)
-	# bert_setup.save_test(path)
+	nlp_process.bert_setup(path)
+	bert_setup.save_test(path)
 
 def model(path_in, path_out, path_bert):
+	'''
+	Wrapper function to scrape sephora API data
+	input: 
+		path_in: path where cleaned data are stored
+		path_out: path where your final model data are stored
+		path_bert: where bert output is stored
+	'''
 
 	hybridize(path_in,path_out,path_bert)
 

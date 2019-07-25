@@ -5,6 +5,11 @@ import numpy as np
 from sksutils.sksutils import thresh_rm
 
 def sparsity(iu):
+
+    '''
+    Get item user matrix sparsity
+    '''
+
     sparsity = iu[iu>0].sum()
     sparsity /= (iu.shape[0] * iu.shape[1])
     sparsity *= 100
@@ -12,6 +17,10 @@ def sparsity(iu):
 
 
 def item_user(file, normalize=True):
+
+    '''
+    generate item user matrix from review dataframe
+    '''
 
     df = pd.read_csv('{}/db_reviews.csv'.format(file))
     df = thresh_rm(df,['user_name'],20)
@@ -30,6 +39,10 @@ def item_user(file, normalize=True):
     return urm
 
 def gen_cf(path, save=True):
+
+    '''
+    Get item-item cosine similarity
+    '''
 
     urm = item_user(path)
     X = np.array(urm.T)

@@ -15,7 +15,7 @@ def save_test(path_in,path_out):
             except:
                 continue
         
-        test = df[df[aspect]].reset_index()
+        test = df[df[aspect]].reset_index(drop=True)
         df_bert_test = pd.DataFrame({'index':list(range(test.shape[0]))})
         df_bert_test['sentences'] = test['sent_process']
 

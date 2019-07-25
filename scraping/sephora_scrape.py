@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 
 class SephoraAPIFetch:
+
     
     def __init__(self):
         self.base_url = 'https://www.sephora.com/api/catalog'
@@ -12,6 +13,11 @@ class SephoraAPIFetch:
 
 
     def product_list(self,s):
+
+        '''
+        Gets all the products across categories, and some general summary info. Returns dataframe.
+
+        '''
         url = '{}/categories/{}/products?currentPage=0&pageSize=999999999&content=true&includeRegionsMap=true'.format(self.base_url,s['id'])
         r = requests.get(url)
         content = json.loads(r.content)
@@ -30,6 +36,10 @@ class SephoraAPIFetch:
 
 
     def review_url(self,product_id,offset=0):
+
+        '''
+        Updates product review API url with offset
+        '''
         
         return 'https://api.bazaarvoice.com/data/reviews.json?Filter=ProductId%3A{}&Sort=Helpfulness%3Adesc&Limit=100&Offset={}&Include=Products%2CComments&Stats=Reviews&passkey=rwbw526r2e7spptqd2qzbkp7&apiversion=5.4'.format(product_id,offset)
     
@@ -41,6 +51,11 @@ class SephoraAPIFetch:
     
     
     def query_summary(self):
+
+        '''
+        Fetch product category
+        '''
+
         cat_list = [4,5,6,8,9,11]
         
         j = self.req(self.product_url)
@@ -56,8 +71,13 @@ class SephoraAPIFetch:
             self.df = self.df.drop_duplicates(subset='product_id').reset_index(drop=True)
 
         print('Summary db fetched')
+        
     
     def query_reviews(self):
+
+        '''
+        Wrapper for fetching reviews
+        '''
         
         self.df_reviews = pd.DataFrame()
         
@@ -69,6 +89,10 @@ class SephoraAPIFetch:
             
    
     def get_reviews(self, product_id):
+
+        '''
+        Fetch reviews, 100 at a time
+        '''
         
         url = self.review_url(product_id)
         init = self.req(url)
