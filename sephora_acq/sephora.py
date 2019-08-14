@@ -137,7 +137,7 @@ class SephoraAPIFetch:
         self.df_reviews = self.df_reviews.append(pd.DataFrame(D), ignore_index=True)
 
 
-def init_scrape(path):
+def init_acq(path):
     s = SephoraAPIFetch()
     s.query_summary()
     s.query_reviews()
@@ -145,4 +145,4 @@ def init_scrape(path):
     s.df_reviews.to_csv('{}/db_reviews_raw.csv'.format(path),index=False)
 
 if __name__ == '__main__':
-    init_scrape()
+    init_acq()

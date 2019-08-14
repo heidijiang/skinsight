@@ -1,6 +1,6 @@
-python pipeline.py --scrape=True --clean=True --model=False
+python pipeline.py --acq=True --clean=True --model=False
 
 bash bert/start_bert.sh
 
-python pipeline.py --scrape=False --clean=False --model=True
+python pipeline.py --acq=False --clean=False --model=True
 

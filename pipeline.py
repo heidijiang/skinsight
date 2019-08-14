@@ -1,18 +1,18 @@
 from models.hybridize import hybridize
 from bert import nlp_process
 from sksutils import preprocess
-from scraping import sephora_scrape
+from sephora_acq import sephora
 from bert import bert_setup
 import argparse
 
-def scrape(path):
+def acq(path):
 
 	'''
 	Wrapper function to scrape sephora API data
 	input: path where you want scraping results to be output
 	'''
 
-	sephora_scrape.init_scrape(path)
+	sephora.init_api(path)
 
 
 def clean(path):
@@ -47,13 +47,13 @@ def main():
 	bert_path = '{}/data_large/bert/bert_final'.format(root)
 
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--scrape', default=False)
+	parser.add_argument('--acq', default=False)
 	parser.add_argument('--clean', default=False)
 	parser.add_argument('--model',  default=False)
 	args = parser.parse_args()
 
-	if args.scrape == 'True':
-		scrape(lg_path)
+	if args.acq == 'True':
+		acq(lg_path)
 
 	if args.clean == 'True':
 		clean(lg_path)
